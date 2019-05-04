@@ -35,6 +35,19 @@ re4_max=inf;
 %Calcular el numero de reynolds
 re = getReynoldsNumber( cd, cd1_min, cd1_max, cd2_min, cd2_max, cd3_min, cd3_max, cd4_min, cd4_max, re1_min, re1_max, re2_min, re2_max, re3_min, re3_max, re4_min, re4_max );
 
+%Calcular el vt
+vt = getVt( re, mu, dens_liq, dp );
+
+fprintf('-----------\nResultados\n-----------\n')
+fprintf( 'Numero de Reynolds : %11.7f \n', re )
+fprintf( 'Coeficiente de friccion : %11.7f \n', cd )
+fprintf( 'Velocidad de sedimentacion : %11.7f \n', vt )
+
+
+%Obtener la iteracion del valor de vt
+metodoFalsaPosicion( mu, dens_liq, dp );
+
+
 %Funcion para obtener las cotas inferiores y superiores.
 function [ min , max ] = getRangeCd( f_str, x_min, x_max )
     f=inline(f_str, 'x');
@@ -45,6 +58,11 @@ function [ min , max ] = getRangeCd( f_str, x_min, x_max )
         max=min;
         min=aux;
     end
+end
+
+
+function vt = getVt( re, mu, dens_liq, dp )
+    vt = (re * mu )/( dens_liq * dp ); 
 end
 
 function reynolds_value = getReynoldsNumber( cd, cd1_min, cd1_max, cd2_min, cd2_max, cd3_min, cd3_max, cd4_min, cd4_max, re1_min, re1_max, re2_min, re2_max, re3_min, re3_max, re4_min, re4_max )
@@ -105,3 +123,41 @@ function [ dens_liq, dens_par, mu, dp ] = getData( )
     dp=input(texto_dp);
     
 end 
+
+
+function y = metodoFalsaPosicion( mu, dens_liq, dp  )
+    %Fx=input('Ingrese la funcion: ','s');
+    syms x
+    Fx=(mu*x)/(dens_liq*dp);
+    a=input('Ingrese a : ');
+    c=input('Ingrese c : ');
+    e=input('Ingrese el error : ');
+  
+    x=a;
+    Fa=eval(Fx);
+    x=c;
+    Fc=eval(Fx);
+    fprintf('\n %6s %7s %8s %10s %8s %8s %8s \n ','A','B','C','F(a)','F(b)','F(c)','|c-a|');
+    while abs(c-a)>e
+        b=(c*Fa-a*Fc)/(Fa-Fc);
+        x=b;
+        Fb=eval(Fx);
+        fprintf('\n %8.4f %8.4f %8.4f %8.4f %8.4f %8.4f %8.4f \n',a,b,c,Fa,Fb,Fc,abs(c-a));
+        if abs(Fc)<e
+            break;
+          else    
+          if Fa*Fb<=0
+              c=b;
+              Fc=Fb;
+              else
+              a=b;
+              Fa=Fb;
+          end
+       end
+              end
+              fprintf('\nEl resultado sera %.4f',b);
+              ezplot(Fx);%graficamos la funcion
+              grid on;
+    y=1;
+end
+
