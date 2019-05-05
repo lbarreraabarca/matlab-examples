@@ -33,7 +33,12 @@ re4_max=inf;
 
 
 %Calcular el numero de reynolds
-re = getReynoldsNumber( cd, cd1_min, cd1_max, cd2_min, cd2_max, cd3_min, cd3_max, cd4_min, cd4_max, re1_min, re1_max, re2_min, re2_max, re3_min, re3_max, re4_min, re4_max );
+[ re, fx ] = getReynoldsNumber( cd, cd1_min, cd1_max, cd2_min, cd2_max, cd3_min, cd3_max, cd4_min, cd4_max, re1_min, re1_max, re2_min, re2_max, re3_min, re3_max, re4_min, re4_max );
+
+
+%Obtener la funcion en terminos de vt
+f_vt = getFunctionVt( g, dens_liq, dens_par, mu, dp, fx )
+
 
 %Calcular el vt
 vt = getVt( re, mu, dens_liq, dp );
@@ -43,10 +48,22 @@ fprintf( 'Numero de Reynolds : %11.7f \n', re )
 fprintf( 'Coeficiente de friccion : %11.7f \n', cd )
 fprintf( 'Velocidad de sedimentacion : %11.7f \n', vt )
 
-
 %Obtener la iteracion del valor de vt
-metodoFalsaPosicion( mu, dens_liq, dp );
+metodoFalsaPosicion(f_vt);
 
+
+function f_vt = getFunctionVt( g, dens_liq, dens_par, mu, dp, fx )
+    syms x
+    if ( fx == 1 )
+        f_vt=3*dens_liq*(24*mu/x*dens_liq*dp)^2 -4*g*(dens_par - dens_liq );
+    elseif ( fx == 2 )
+        f_vt=3*dens_liq*(24*mu*(1+0.14*((x*dp*dens_liq)/(mu)))/(x*dp*dens_liq))^2 -4*g*(dens_par - dens_liq );
+    elseif ( fx == 3 )
+        f_vt=3*dens_liq*(0.44)^2 -4*g*(dens_par - dens_liq );
+    else
+        f_vt=3*dens_liq*(-19-((80000*u)/(x*desn_liq*dp)))^2 -4*g*(dens_par - dens_liq );
+    end
+end
 
 %Funcion para obtener las cotas inferiores y superiores.
 function [ min , max ] = getRangeCd( f_str, x_min, x_max )
@@ -60,21 +77,24 @@ function [ min , max ] = getRangeCd( f_str, x_min, x_max )
     end
 end
 
-
 function vt = getVt( re, mu, dens_liq, dp )
     vt = (re * mu )/( dens_liq * dp ); 
 end
 
-function reynolds_value = getReynoldsNumber( cd, cd1_min, cd1_max, cd2_min, cd2_max, cd3_min, cd3_max, cd4_min, cd4_max, re1_min, re1_max, re2_min, re2_max, re3_min, re3_max, re4_min, re4_max )
+function [reynolds_value, fx ] = getReynoldsNumber( cd, cd1_min, cd1_max, cd2_min, cd2_max, cd3_min, cd3_max, cd4_min, cd4_max, re1_min, re1_max, re2_min, re2_max, re3_min, re3_max, re4_min, re4_max )
     syms y x;
     if ( cd >= cd1_min ) && ( cd <= cd1_max )
         eq = y == ( 24 / x );
+        fx = 1;
     elseif ( cd >= cd2_min ) && ( cd <= cd2_max )
         eq = y == (24/x)*(1+0.14*x^(0.7));
+        fx = 2;
     elseif ( cd >= cd3_min ) && ( cd <= cd3_max )
         eq = y == 0.44;
+        fx = 3;
     elseif ( cd >= cd4_min ) && ( cd <= cd4_max )
         eq = y == -19 -(80000/x);
+        fx = 4;
     end
     reynolds_value=getInverse( eq, cd );   
 end
@@ -124,13 +144,11 @@ function [ dens_liq, dens_par, mu, dp ] = getData( )
     
 end 
 
-
-function y = metodoFalsaPosicion( mu, dens_liq, dp  )
-    %Fx=input('Ingrese la funcion: ','s');
+function y = metodoFalsaPosicion(f_vt)
     syms x
-    Fx=(mu*x)/(dens_liq*dp);
-    a=input('Ingrese a : ');
-    c=input('Ingrese c : ');
+    Fx=f_vt;
+    a=input('Ingrese limite inferior : ');
+    c=input('Ingrese limite superior : ');
     e=input('Ingrese el error : ');
   
     x=a;
@@ -153,11 +171,11 @@ function y = metodoFalsaPosicion( mu, dens_liq, dp  )
               a=b;
               Fa=Fb;
           end
-       end
-              end
-              fprintf('\nEl resultado sera %.4f',b);
-              ezplot(Fx);%graficamos la funcion
-              grid on;
+        end
+    end
+    fprintf('\nEl resultado sera %.4f',b);
+    ezplot(Fx);%graficamos la funcion
+    grid on;
     y=1;
 end
 
