@@ -37,10 +37,10 @@ re4_max=inf;
 
 
 %Obtener la funcion en terminos de vt
-f_vt = getFunctionVt( g, dens_liq, dens_par, mu, dp, fx )
+f_vt = getFunctionVt( g, dens_liq, dens_par, mu, dp, fx );
 
 %Obtener la iteracion del valor de vt
-metodoFalsaPosicion(f_vt);
+vt1 = metodoFalsaPosicion(f_vt);
 
 %Calcular el vt
 vt = getVt( re, mu, dens_liq, dp );
@@ -177,6 +177,6 @@ function y = metodoFalsaPosicion(f_vt)
     fprintf('\nEl resultado sera %.4f',b);
     ezplot(Fx);%graficamos la funcion
     grid on;
-    y=1;
+    y=b;
 end
 
