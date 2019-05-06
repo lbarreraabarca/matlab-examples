@@ -39,6 +39,8 @@ re4_max=inf;
 %Obtener la funcion en terminos de vt
 f_vt = getFunctionVt( g, dens_liq, dens_par, mu, dp, fx )
 
+%Obtener la iteracion del valor de vt
+metodoFalsaPosicion(f_vt);
 
 %Calcular el vt
 vt = getVt( re, mu, dens_liq, dp );
@@ -48,12 +50,11 @@ fprintf( 'Numero de Reynolds : %11.7f \n', re )
 fprintf( 'Coeficiente de friccion : %11.7f \n', cd )
 fprintf( 'Velocidad de sedimentacion : %11.7f \n', vt )
 
-%Obtener la iteracion del valor de vt
-metodoFalsaPosicion(f_vt);
 
+%Declaracion de funciones
 
 function f_vt = getFunctionVt( g, dens_liq, dens_par, mu, dp, fx )
-    syms x
+    syms x;
     if ( fx == 1 )
         f_vt=3*dens_liq*(24*mu/x*dens_liq*dp)^2 -4*g*(dens_par - dens_liq );
     elseif ( fx == 2 )
