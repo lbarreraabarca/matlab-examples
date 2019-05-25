@@ -58,7 +58,7 @@ function [it, oA, oB, oC, ox1, ox2, ox3 ] = methodNewtonRaphson( k1, k2, k3 )
         [ f, j, outA, outB, outC, x1, x2, x3 ] = getSistemaEcuaciones( k1, k2, k3, X );
         X = X - inv(j)*f;
         
-        %fprintf('%2d %11.4f %11.4f %11.4f %11.4f %11.4f %11.4f \n',i, outA, outB, outC, x1, x2, x3 );
+        fprintf('%2d %11.4f %11.4f %11.4f %11.4f %11.4f %11.4f \n',i, outA, outB, outC, x1, x2, x3 );
         it(i) =i;
         oA(i)=outA;
         oB(i)=outB;
